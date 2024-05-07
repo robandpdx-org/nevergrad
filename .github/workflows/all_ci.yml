@@ -36,7 +36,6 @@ jobs:
         echo "This is on $CIRCLE_REPOSITORY_URL."
         . venv/bin/activate
         pip freeze
-      if: always()
     - name: "[no-extra] Run basic tests (checking dependencies)"
       run: |
         . venv/bin/activate
@@ -51,11 +50,10 @@ jobs:
       run: |
         . venv/bin/activate
         pip freeze
-      if: always()
     - name: Run wheel and check package
       run: |
-        pip install wheel
         . venv/bin/activate
+        pip install wheel
         rm -rf dist  # make sure it's clean
         echo "Creating sdist"
         python setup.py sdist
@@ -75,7 +73,6 @@ jobs:
         #pip install --progress-bar off --use-deprecated=legacy-resolver repo/nevergrad-build/dist/nevergrad-*any.whl
         echo "Installed wheel"
         python -c "from nevergrad import functions;f = functions.ArtificialFunction(name='sphere', block_dimension=2);f([2, 3])"
-      if: always()
     - uses: actions/upload-artifact@v4.0.0
       with:
         path: nevergrad-build/dist
@@ -102,20 +99,17 @@ jobs:
         . venv/bin/activate
         mypy --version
         mypy nevergrad
-      if: always()
     - name: Run basic pylint
       run: |
         . venv/bin/activate
         pylint --version
         pylint nevergrad --disable=all --enable=unused-import,unused-argument,unused-variable,undefined-loop-variable,redefined-builtin,used-before-assignment,super-init-not-called,useless-super-delegation,dangerous-default-value,unnecessary-pass,attribute-defined-outside-init
-      if: always()
     - name: Run black
       run: |
-        pip install black
         . venv/bin/activate
+        pip install black
         black --version
         black nevergrad --check --diff
-      if: always()
   pytests:
     if: # GitHub does not currently support regular expressions inside if conditions
 #         github.ref == 'refs/tags//(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(\.post(0|[1-9][0-9]*))?/'
@@ -128,11 +122,10 @@ jobs:
     - uses: "./.github/actions/ubuntu_restore_all"
     - name: "[all] Run pytest"
       run: |
-        pip install pytest
         . venv/bin/activate
+        pip install pytest
         pytest --circleci-parallelize nevergrad -v --durations=20 --cov=nevergrad
         #pytest nevergrad -v --exitfirst --durations=20 --cov=nevergrad
-      if: always()
   docs-deploy:
     if: # GitHub does not currently support regular expressions inside if conditions
 #         github.ref == 'refs/heads/main' || github.ref == 'refs/tags//(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(\.post(0|[1-9][0-9]*))?/'
@@ -168,8 +161,6 @@ jobs:
   docs-links:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    needs:
-    - install
     steps:
     - uses: actions/setup-python@v5
       with:
@@ -181,7 +172,6 @@ jobs:
         . venv/bin/activate
         cd docs/
         make linkcheck
-      if: always()
   pypi-deploy:
     if: # GitHub does not currently support regular expressions inside if conditions
 #         (github.ref == 'refs/tags//(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(\.post(0|[1-9][0-9]*))?/') && (github.ref != 'refs/heads//.*/')
